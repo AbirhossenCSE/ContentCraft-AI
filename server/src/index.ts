@@ -1,15 +1,17 @@
+import dotenv from 'dotenv';
+// Load environment variables immediately before any other imports
+dotenv.config();
+
 import express, { Request, Response } from 'express';
 import dns from 'dns';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { connectDB } from './config/db';
+import './config/openrouter'; // Trigger validation check on startup
 import { errorHandler } from './middlewares/errorHandler';
 import authRoutes from './routes/auth.routes';
+import generateRoutes from './routes/generate.routes';
 
 dns.setServers(['8.8.8.8', '8.8.4.4']);
-
-// Load environment variables
-dotenv.config();
 
 // Connect to Database
 connectDB();
@@ -23,6 +25,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/generate', generateRoutes);
 
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok' });
