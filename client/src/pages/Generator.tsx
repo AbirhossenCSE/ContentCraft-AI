@@ -324,6 +324,9 @@ export const Generator: React.FC = () => {
                   <span className="text-xs text-slate-400">
                     {wordCount} words
                   </span>
+                  <span className="text-xs text-slate-400 bg-slate-950 border border-slate-800/80 px-2.5 py-1.5 rounded-lg">
+                    {user?.credits} Credits Remaining
+                  </span>
                   <button
                     onClick={handleCopy}
                     className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-lg transition select-none cursor-pointer"

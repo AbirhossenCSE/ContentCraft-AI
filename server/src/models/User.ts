@@ -45,6 +45,15 @@ UserSchema.methods.checkAndResetCredits = async function (
   this: IUser
 ): Promise<void> {
   const now = new Date();
+
+  // Self-healing: If lastCreditReset is missing/undefined/null, treat it as needing reset
+  if (!this.lastCreditReset) {
+    this.credits = 5;
+    this.lastCreditReset = now;
+    await this.save();
+    return;
+  }
+
   const lastReset = new Date(this.lastCreditReset);
 
   // Compare calendar date in server's local timezone (UTC+6 for Bangladesh user base)
