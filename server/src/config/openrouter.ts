@@ -20,4 +20,6 @@ export const openRouter = axios.create({
   },
 });
 
-export const MODEL = 'openai/gpt-oss-120b:free';
+// OpenRouter's free model lineup changes over time.
+// Verify current free models at https://openrouter.ai/models (filter by price = free) if this stops working again.
+export const MODEL = 'openai/gpt-oss-20b:free';
