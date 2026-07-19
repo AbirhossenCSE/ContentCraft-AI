@@ -10,6 +10,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateCredits: (credits: number) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -99,6 +100,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     delete api.defaults.headers.common['Authorization'];
   };
 
+  const updateCredits = (credits: number): void => {
+    if (user) {
+      const updatedUser = { ...user, credits };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -108,6 +117,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         login,
         register,
         logout,
+        updateCredits,
       }}
     >
       {children}

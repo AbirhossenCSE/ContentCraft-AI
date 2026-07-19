@@ -5,7 +5,9 @@ export interface IUser extends Document {
   email: string;
   password: string;
   credits: number;
+  lastCreditReset: Date;
   createdAt: Date;
+  checkAndResetCredits: () => Promise<void>;
 }
 
 const UserSchema: Schema<IUser> = new Schema({
@@ -29,11 +31,34 @@ const UserSchema: Schema<IUser> = new Schema({
     type: Number,
     default: 5,
   },
+  lastCreditReset: {
+    type: Date,
+    default: Date.now,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
+
+UserSchema.methods.checkAndResetCredits = async function (
+  this: IUser
+): Promise<void> {
+  const now = new Date();
+  const lastReset = new Date(this.lastCreditReset);
+
+  // Compare calendar date in server's local timezone (UTC+6 for Bangladesh user base)
+  const isDifferentDay =
+    now.getFullYear() !== lastReset.getFullYear() ||
+    now.getMonth() !== lastReset.getMonth() ||
+    now.getDate() !== lastReset.getDate();
+
+  if (isDifferentDay && now.getTime() > lastReset.getTime()) {
+    this.credits = 5;
+    this.lastCreditReset = now;
+    await this.save();
+  }
+};
 
 const User: Model<IUser> = mongoose.model<IUser>('User', UserSchema);
 

@@ -52,6 +52,9 @@ export const generateContent = async (
       return;
     }
 
+    // Check and apply daily credit reset if a new day has started
+    await user.checkAndResetCredits();
+
     if (user.credits <= 0) {
       res.status(402).json({
         status: 'error',

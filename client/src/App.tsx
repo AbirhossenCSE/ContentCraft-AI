@@ -3,7 +3,7 @@ import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ProtectedRoute from './components/ProtectedRoute';
-import GeneratorPlaceholder from './pages/GeneratorPlaceholder';
+import Generator from './pages/Generator';
 
 function RootRedirect() {
   const { token } = useAuth();
@@ -26,7 +26,7 @@ function App() {
           path="/generator"
           element={
             <ProtectedRoute>
-              <GeneratorPlaceholder />
+              <Generator />
             </ProtectedRoute>
           }
         />

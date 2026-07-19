@@ -10,6 +10,7 @@ import './config/openrouter'; // Trigger validation check on startup
 import { errorHandler } from './middlewares/errorHandler';
 import authRoutes from './routes/auth.routes';
 import generateRoutes from './routes/generate.routes';
+import userRoutes from './routes/user.routes';
 
 dns.setServers(['8.8.8.8', '8.8.4.4']);
 
@@ -26,6 +27,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/generate', generateRoutes);
+app.use('/api/user', userRoutes);
 
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok' });
