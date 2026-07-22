@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Loader2 } from 'lucide-react';
+import Navbar from './Navbar';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -25,7 +26,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+      <Navbar />
+      <div className="flex-1 overflow-y-auto">{children}</div>
+    </div>
+  );
 };
 
 export default ProtectedRoute;

@@ -11,3 +11,15 @@ export interface AuthResponse {
   token: string;
   user: User;
 }
+
+export interface Content {
+  _id: string;
+  userId: string;
+  type: 'blog' | 'caption' | 'description' | 'newsletter';
+  topic: string;
+  tone: string;
+  length: 'short' | 'medium' | 'long';
+  generatedText: string;
+  isFavorite: boolean;
+  createdAt: string;
+}

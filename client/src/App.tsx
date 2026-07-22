@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ProtectedRoute from './components/ProtectedRoute';
 import Generator from './pages/Generator';
+import History from './pages/History';
 
 function RootRedirect() {
   const { token } = useAuth();
@@ -27,6 +28,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Generator />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <History />
             </ProtectedRoute>
           }
         />

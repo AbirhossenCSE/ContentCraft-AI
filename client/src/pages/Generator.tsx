@@ -7,9 +7,6 @@ import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import {
   Sparkles,
-  LogOut,
-  Coins,
-  User,
   Copy,
   Check,
   AlertCircle,
@@ -38,18 +35,24 @@ interface GenerateResponse {
 }
 
 export const Generator: React.FC = () => {
-  const { user, logout, updateCredits } = useAuth();
+  const { user, updateCredits } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [wordCount, setWordCount] = useState<number>(0);
   const [copied, setCopied] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // States for save functionality
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasSavedCurrent, setHasSavedCurrent] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
     setValue,
     watch,
+    getValues,
     formState: { errors },
   } = useForm<GenerateFormInput>({
     resolver: zodResolver(generateFormSchema),
@@ -70,6 +73,8 @@ export const Generator: React.FC = () => {
     setIsGenerating(true);
     setErrorMsg(null);
     setResult(null);
+    setHasSavedCurrent(false);
+    setSaveError(null);
     try {
       const response = await api.post<GenerateResponse>('/generate', data);
       const { content, wordCount: words, creditsRemaining } = response.data;
@@ -91,6 +96,32 @@ export const Generator: React.FC = () => {
       setErrorMsg(errMsg);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!result || hasSavedCurrent || isSaving) return;
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const formValues = getValues();
+      await api.post('/contents/save', {
+        type: formValues.type,
+        topic: formValues.topic,
+        tone: formValues.tone,
+        length: formValues.length,
+        generatedText: result,
+      });
+      setHasSavedCurrent(true);
+    } catch (err: unknown) {
+      console.error('Error saving content:', err);
+      let errMsg = 'Failed to save content. Please try again.';
+      if (axios.isAxiosError(err)) {
+        errMsg = err.response?.data?.message || errMsg;
+      }
+      setSaveError(errMsg);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -117,45 +148,10 @@ export const Generator: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col relative overflow-hidden font-sans select-none">
+    <div className="flex-1 flex flex-col relative overflow-hidden font-sans select-none">
       {/* Background Decorative Blobs */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-purple-900/5 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-900/5 rounded-full blur-[140px] pointer-events-none" />
-
-      {/* Navigation Header */}
-      <header className="bg-slate-900/40 backdrop-blur-md border-b border-slate-800/80 px-6 py-4 flex justify-between items-center relative z-10">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-md shadow-purple-500/10">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-lg bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
-            ContentCraft AI
-          </span>
-        </div>
-
-        <div className="flex items-center gap-6">
-          <div className="hidden sm:flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800/80 px-3.5 py-1.5 rounded-full text-slate-300">
-              <User className="w-4 h-4 text-purple-400" />
-              <span>{user?.name}</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800/80 px-3.5 py-1.5 rounded-full text-slate-300">
-              <Coins className="w-4 h-4 text-amber-400 animate-pulse" />
-              <span className="font-semibold text-slate-200">
-                {user?.credits} Credits
-              </span>
-            </div>
-          </div>
-
-          <button
-            onClick={logout}
-            className="flex items-center gap-2 text-sm text-slate-400 hover:text-white px-4 py-2 hover:bg-slate-800/50 rounded-xl transition duration-150 cursor-pointer"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Logout</span>
-          </button>
-        </div>
-      </header>
 
       {/* Main Page Layout */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-5 gap-8 relative z-10">
@@ -328,6 +324,28 @@ export const Generator: React.FC = () => {
                     {user?.credits} Credits Remaining
                   </span>
                   <button
+                    onClick={handleSave}
+                    disabled={hasSavedCurrent || isSaving}
+                    className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white disabled:opacity-50 disabled:hover:text-slate-400 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-lg transition select-none cursor-pointer"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                        <span>Saving...</span>
+                      </>
+                    ) : hasSavedCurrent ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                        <span className="text-green-400">Saved ✓</span>
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-3.5 h-3.5 shrink-0" />
+                        <span>Save</span>
+                      </>
+                    )}
+                  </button>
+                  <button
                     onClick={handleCopy}
                     className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-lg transition select-none cursor-pointer"
                   >
@@ -353,6 +371,13 @@ export const Generator: React.FC = () => {
                 <div className="flex items-start gap-3 bg-red-950/40 border border-red-800/50 p-4 rounded-xl text-red-200 text-sm max-w-md mx-auto my-4 animate-fadeIn select-text">
                   <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
                   <p>{errorMsg}</p>
+                </div>
+              )}
+
+              {saveError && (
+                <div className="flex items-start gap-3 bg-red-950/40 border border-red-800/50 p-4 rounded-xl text-red-200 text-sm max-w-md mx-auto my-4 animate-fadeIn select-text">
+                  <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                  <p>{saveError}</p>
                 </div>
               )}
 
