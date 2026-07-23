@@ -1,26 +1,16 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ProtectedRoute from './components/ProtectedRoute';
 import Generator from './pages/Generator';
 import History from './pages/History';
-
-function RootRedirect() {
-  const { token } = useAuth();
-  // If logged in, go to generator, else redirect to login
-  return token ? (
-    <Navigate to="/generator" replace />
-  ) : (
-    <Navigate to="/login" replace />
-  );
-}
+import Landing from './pages/Landing';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<RootRedirect />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route
